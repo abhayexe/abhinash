@@ -49,9 +49,93 @@ Example questions you can ask:
 - Google Gemini AI API
 - Lucide React Icons
 
-## Development
+## Setup Instructions
 
-1. Clone the repository
-2. Install dependencies with `npm install`
-3. Start the development server with `npm run dev`
-4. Open [http://localhost:5173](http://localhost:5173) to view the app
+### 1. Clone and Install Dependencies
+
+```bash
+git clone <repository-url>
+cd carshare
+npm install
+```
+
+### 2. Supabase Setup
+
+This project uses Supabase for backend services. The configuration is already set up for the production instance:
+
+- **Supabase URL**: `https://bwwjhxpzwlgcfrsfpfzo.supabase.co`
+- **API Key**: `sb_publishable_5X75v9B81nOcQKuSRBofyQ_2OV7KIL9`
+
+### 3. Database Migration
+
+Run the following SQL scripts in your Supabase SQL Editor (in order):
+
+1. **Fresh Database Setup**: Run `supabase/migrations/20241221000000_fresh_database_setup.sql`
+
+   - Creates all necessary tables (profiles, cars, rentals)
+   - Sets up Row Level Security policies
+   - Creates triggers and functions
+   - Adds performance indexes
+
+2. **Storage Setup**: Run `supabase/migrations/20241221000001_setup_storage.sql`
+   - Creates storage bucket for car images
+   - Sets up storage policies
+
+### 4. Environment Configuration
+
+The project includes environment configuration. You can customize the settings by creating a `.env` file:
+
+```env
+# Supabase Configuration
+VITE_SUPABASE_URL=https://bwwjhxpzwlgcfrsfpfzo.supabase.co
+VITE_SUPABASE_ANON_KEY=sb_publishable_5X75v9B81nOcQKuSRBofyQ_2OV7KIL9
+
+# AI Configuration
+VITE_GEMINI_API_KEY=AIzaSyARiGMhrYFP4ebAPhTAamHgc5TVUUkrB7M
+```
+
+### 5. Development
+
+Start the development server:
+
+```bash
+npm run dev
+```
+
+Open [http://localhost:5173](http://localhost:5173) to view the app.
+
+## Database Schema
+
+### Tables
+
+1. **profiles** - User profile information
+
+   - Links to Supabase auth.users
+   - Stores additional user data
+
+2. **cars** - Car listings
+
+   - Multiple image support (3 images per car)
+   - Owner information and availability status
+   - Detailed specifications (make, model, year, etc.)
+
+3. **rentals** - Booking system
+   - Links cars with renters
+   - Date ranges and pricing
+   - Status tracking (pending, approved, active, etc.)
+
+### Storage
+
+- **car-images** bucket for storing car photos
+- Public read access, authenticated upload access
+- User-specific folder structure
+
+## Features Overview
+
+- **Authentication**: Email/password login and registration
+- **Car Management**: List, edit, and manage your cars
+- **Rental System**: Browse and book available cars
+- **Dashboard**: View your rentals and car listings
+- **AI Assistant**: Get help with car-related questions
+- **Image Upload**: Support for multiple car images
+- **Responsive Design**: Works on desktop and mobile devices

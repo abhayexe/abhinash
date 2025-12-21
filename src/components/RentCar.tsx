@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
+import { CarLocationMap } from "./CarLocationMap";
+import { SimpleLocationDisplay } from "./SimpleLocationDisplay";
+import { MapErrorBoundary } from "./MapErrorBoundary";
 import {
   MapPin,
   Calendar,
@@ -47,6 +50,7 @@ export function RentCar() {
   const [error, setError] = useState("");
   const [currentImage, setCurrentImage] = useState(0);
   const [imageLoading, setImageLoading] = useState(true);
+  const [mapError, setMapError] = useState(false);
 
   useEffect(() => {
     fetchCar();
@@ -298,7 +302,7 @@ export function RentCar() {
               {car.year} {car.make} {car.model}
             </h1>
             <div className="inline-flex px-4 py-2 rounded-full bg-indigo-100 text-indigo-800 text-lg font-semibold">
-              ${car.daily_rate}/day
+              ₹{car.daily_rate}/day
             </div>
           </div>
 
@@ -363,6 +367,37 @@ export function RentCar() {
                     </div>
                   </div>
                 </div>
+              </div>
+
+              <div className="bg-gray-50 rounded-xl p-6 shadow-sm">
+                <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                  <MapPin className="h-5 w-5 mr-2 text-indigo-600" />
+                  Location
+                </h3>
+                <MapErrorBoundary
+                  fallback={
+                    <SimpleLocationDisplay
+                      location={car.location}
+                      carDetails={{
+                        make: car.make,
+                        model: car.model,
+                        year: car.year,
+                        dailyRate: car.daily_rate,
+                      }}
+                    />
+                  }
+                >
+                  <CarLocationMap
+                    location={car.location}
+                    carDetails={{
+                      make: car.make,
+                      model: car.model,
+                      year: car.year,
+                      dailyRate: car.daily_rate,
+                    }}
+                  />
+                </MapErrorBoundary>
+                <p className="mt-3 text-sm text-gray-600">📍 {car.location}</p>
               </div>
 
               <div className="bg-gray-50 rounded-xl p-6 shadow-sm">
@@ -488,19 +523,19 @@ export function RentCar() {
                     <div className="bg-indigo-50 p-4 rounded-lg">
                       <div className="flex justify-between text-sm text-gray-600 mb-1">
                         <span>
-                          ${car.daily_rate} × {totalDays} day
+                          ₹{car.daily_rate} × {totalDays} day
                           {totalDays !== 1 ? "s" : ""}
                         </span>
-                        <span>${(car.daily_rate * totalDays).toFixed(2)}</span>
+                        <span>₹{(car.daily_rate * totalDays).toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between text-sm text-gray-600 mb-3">
                         <span>Service fee</span>
-                        <span>$0.00</span>
+                        <span>₹0.00</span>
                       </div>
                       <div className="border-t border-gray-200 pt-2 flex justify-between">
                         <span className="font-medium">Total</span>
                         <span className="text-lg font-bold text-indigo-700">
-                          ${totalPrice.toFixed(2)}
+                          ₹{totalPrice.toFixed(2)}
                         </span>
                       </div>
                     </div>

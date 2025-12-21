@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Gemini Models</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .test-result {
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 5px;
+      }
+      .success {
+        background: #d4edda;
+        color: #155724;
+      }
+      .error {
+        background: #f8d7da;
+        color: #721c24;
+      }
+      .info {
+        background: #d1ecf1;
+        color: #0c5460;
+      }
+      button {
+        padding: 10px 15px;
+        margin: 5px;
+        border: none;
+        border-radius: 5px;
+        background: #007bff;
+        color: white;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #0056b3;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🧪 Test Gemini Models</h1>
+    <p>Let's test which models work with your API key:</p>
+
+    <button onclick="testModel('gemini-1.5-flash')">
+      Test gemini-1.5-flash
+    </button>
+    <button onclick="testModel('gemini-1.5-pro')">Test gemini-1.5-pro</button>
+    <button onclick="testModel('gemini-2.0-flash-exp')">
+      Test gemini-2.0-flash-exp
+    </button>
+    <button onclick="testModel('gemini-pro')">Test gemini-pro</button>
+
+    <div id="results"></div>
+
+    <script>
+      const API_KEY = "AIzaSyBn-CHbkORD3gFb8uA1m30VTNVnnLYlrNw";
+
+      async function testModel(modelName) {
+        const resultsDiv = document.getElementById("results");
+        resultsDiv.innerHTML += `<div class="info">Testing ${modelName}...</div>`;
+
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`;
+
+        try {
+          const response = await fetch(`${API_URL}?key=${API_KEY}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              contents: [
+                {
+                  role: "user",
+                  parts: [
+                    {
+                      text: "Hello! Just testing if this model works.",
+                    },
+                  ],
+                },
+              ],
+              generationConfig: {
+                temperature: 0.2,
+                maxOutputTokens: 100,
+              },
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
+
+          const data = await response.json();
+          const aiResponse =
+            data.candidates?.[0]?.content?.parts?.[0]?.text || "No response";
+
+          resultsDiv.innerHTML += `
+                    <div class="success">✅ ${modelName} works!</div>
+                    <div class="info"><strong>Response:</strong> ${aiResponse.substring(
+                      0,
+                      100
+                    )}...</div>
+                `;
+        } catch (error) {
+          resultsDiv.innerHTML += `
+                    <div class="error">❌ ${modelName} failed: ${error.message}</div>
+                `;
+        }
+      }
+    </script>
+  </body>
+</html>

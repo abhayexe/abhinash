@@ -53,9 +53,11 @@ export function ChatBot() {
   const [userId, setUserId] = useState<string | null>(null);
   const [showSuggestions, setShowSuggestions] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const API_KEY = "AIzaSyARiGMhrYFP4ebAPhTAamHgc5TVUUkrB7M";
+  const API_KEY =
+    import.meta.env.VITE_GEMINI_API_KEY ||
+    "AIzaSyBn-CHbkORD3gFb8uA1m30VTNVnnLYlrNw";
   const API_URL =
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
   // Suggested questions for users
   const suggestedQuestions = [
@@ -126,12 +128,28 @@ export function ChatBot() {
     }
   };
 
-  // Fetch car data from Supabase
+  // Fetch car data from Supabase with more detailed information
   const fetchCarData = async () => {
     try {
       const { data, error } = await supabase
         .from("cars")
-        .select("id, make, model, year, location");
+        .select(
+          `
+          id, 
+          make, 
+          model, 
+          year, 
+          location, 
+          daily_rate, 
+          available, 
+          description,
+          fuel_type,
+          transmission,
+          seats,
+          image_url
+        `
+        )
+        .eq("available", true); // Only fetch available cars
 
       if (error) throw error;
       setCarData(data || []);
@@ -140,12 +158,18 @@ export function ChatBot() {
     }
   };
 
-  // Fetch rental data from Supabase
+  // Fetch rental data from Supabase with more details
   const fetchRentalData = async () => {
     try {
-      const { data, error } = await supabase
-        .from("rentals")
-        .select("id, car_id, start_date, end_date, status");
+      const { data, error } = await supabase.from("rentals").select(`
+          id, 
+          car_id, 
+          start_date, 
+          end_date, 
+          status,
+          total_price,
+          cars (make, model, year, location)
+        `);
 
       if (error) throw error;
       setRentalData(data || []);
@@ -154,14 +178,22 @@ export function ChatBot() {
     }
   };
 
+  // Refresh data when chat opens
+  const toggleChat = () => {
+    setIsChatOpen(!isChatOpen);
+    if (!isChatOpen) {
+      // Refresh data when opening chat
+      fetchCarData();
+      fetchRentalData();
+      if (userId) {
+        fetchUserSpecificData(userId);
+      }
+    }
+  };
+
   // Scroll to bottom of chat
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  // Toggle chat panel
-  const toggleChat = () => {
-    setIsChatOpen(!isChatOpen);
   };
 
   // Handle input change
@@ -173,6 +205,18 @@ export function ChatBot() {
   const handleSuggestionClick = (question: string) => {
     setInputValue(question);
     setShowSuggestions(false);
+  };
+
+  // Convert markdown formatting to HTML
+  const formatMessage = (text: string) => {
+    return text
+      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>") // **bold** -> <strong>bold</strong>
+      .replace(
+        /\* (.*?)(?=\n|$)/g,
+        '<div style="margin-left: 10px; margin-bottom: 4px;">• $1</div>'
+      ) // * item -> bullet point
+      .replace(/\*(.*?)\*/g, "<em>$1</em>") // *italic* -> <em>italic</em>
+      .replace(/\n/g, "<br>"); // newlines -> <br>
   };
 
   // Handle form submission
@@ -212,20 +256,46 @@ export function ChatBot() {
     setMessages((prev) => [...prev, assistantMessage]);
 
     try {
-      // Prepare the context about available cars and rentals
-      const carContext = carData
-        .map(
-          (car) =>
-            `Car ID: ${car.id}, Make: ${car.make}, Model: ${car.model}, Year: ${car.year}, Location: ${car.location}`
-        )
-        .join("\n");
+      // Refresh data before generating response to ensure latest information
+      await Promise.all([
+        fetchCarData(),
+        fetchRentalData(),
+        userId ? fetchUserSpecificData(userId) : Promise.resolve(),
+      ]);
 
-      const rentalContext = rentalData
-        .map(
-          (rental) =>
-            `Rental ID: ${rental.id}, Car ID: ${rental.car_id}, Start Date: ${rental.start_date}, End Date: ${rental.end_date}, Status: ${rental.status}`
-        )
-        .join("\n");
+      // Prepare enhanced context about available cars
+      const carContext =
+        carData.length > 0
+          ? carData
+              .map(
+                (car) =>
+                  `Car: ${car.make} ${car.model} (${car.year})
+                - Location: ${car.location}
+                - Daily Rate: ₹${car.daily_rate}
+                - Fuel Type: ${car.fuel_type || "Not specified"}
+                - Transmission: ${car.transmission || "Not specified"}
+                - Seats: ${car.seats || "Not specified"}
+                - Description: ${car.description || "No description available"}
+                - Available: ${car.available ? "Yes" : "No"}
+                - ID: ${car.id}`
+              )
+              .join("\n\n")
+          : "No cars are currently available in the marketplace.";
+
+      const rentalContext =
+        rentalData.length > 0
+          ? rentalData
+              .map(
+                (rental) =>
+                  `Rental: ${rental.cars?.make} ${rental.cars?.model} (${rental.cars?.year})
+                - Location: ${rental.cars?.location}
+                - Rental Period: ${rental.start_date} to ${rental.end_date}
+                - Status: ${rental.status}
+                - Total Price: ₹${rental.total_price}
+                - Rental ID: ${rental.id}`
+              )
+              .join("\n\n")
+          : "No active rentals in the system.";
 
       // Add user-specific rental context
       const userRentalContext =
@@ -234,7 +304,7 @@ export function ChatBot() {
               .map(
                 (rental) =>
                   `Your Rental: ${rental.id}, Car: ${rental.cars?.make} ${rental.cars?.model} (${rental.cars?.year}), ` +
-                  `From: ${rental.start_date}, To: ${rental.end_date}, Status: ${rental.status}, Total: $${rental.total_price}`
+                  `From: ${rental.start_date}, To: ${rental.end_date}, Status: ${rental.status}, Total: ₹${rental.total_price}`
               )
               .join("\n")
           : "You don't have any active rentals at the moment.";
@@ -245,7 +315,7 @@ export function ChatBot() {
           ? userCars
               .map(
                 (car) =>
-                  `Your Car: ${car.make} ${car.model} (${car.year}), Daily rate: $${car.daily_rate}, ` +
+                  `Your Car: ${car.make} ${car.model} (${car.year}), Daily rate: ₹${car.daily_rate}, ` +
                   `Location: ${car.location}, Available: ${
                     car.available ? "Yes" : "No"
                   }`
@@ -299,6 +369,11 @@ export function ChatBot() {
       });
 
       if (!response.ok) {
+        if (response.status === 429) {
+          throw new Error(
+            "Rate limit exceeded. Please wait a moment and try again."
+          );
+        }
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
@@ -353,8 +428,9 @@ export function ChatBot() {
           message.id === assistantMessageId
             ? {
                 ...message,
-                content:
-                  "I'm sorry, I encountered an error while processing your request. Please try again later.",
+                content: error.message.includes("Rate limit")
+                  ? "I'm currently experiencing high demand. Please wait a moment and try asking your question again."
+                  : "I'm sorry, I encountered an error while processing your request. Please try again later.",
               }
             : message
         )
@@ -415,7 +491,15 @@ export function ChatBot() {
                     : "bg-gray-100 text-gray-800 rounded-bl-none"
                 }`}
               >
-                <p className="text-sm">{message.content}</p>
+                <div
+                  className="text-sm"
+                  dangerouslySetInnerHTML={{
+                    __html:
+                      message.role === "assistant"
+                        ? formatMessage(message.content)
+                        : message.content,
+                  }}
+                />
                 <p
                   className={`text-xs mt-1 ${
                     message.role === "user"

@@ -156,7 +156,7 @@ export function CarList() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Price Range ($ per day)
+                  Price Range (₹ per day)
                 </label>
                 <div className="flex items-center">
                   <input
@@ -245,7 +245,7 @@ export function CarList() {
                 />
                 <div className="absolute top-4 right-4">
                   <div className="bg-indigo-600 text-white px-3 py-1 rounded-full text-sm font-bold">
-                    ${car.daily_rate}/day
+                    ₹{car.daily_rate}/day
                   </div>
                 </div>
               </div>

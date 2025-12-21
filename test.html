@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CarShare Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background: #f5f5f5;
+      }
+      .card {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin: 20px 0;
+      }
+      .success {
+        color: #22c55e;
+      }
+      .error {
+        color: #ef4444;
+      }
+      .warning {
+        color: #f59e0b;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>🚗 CarShare Platform Test</h1>
+      <p>If you can see this page, the basic setup is working!</p>
+
+      <div id="supabase-test">
+        <h3>Testing Supabase Connection...</h3>
+        <div id="supabase-result">Loading...</div>
+      </div>
+
+      <div id="env-test">
+        <h3>Environment Variables:</h3>
+        <div id="env-result">Checking...</div>
+      </div>
+    </div>
+
+    <script type="module">
+      // Test environment variables
+      const envResult = document.getElementById("env-result");
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+      envResult.innerHTML = `
+            <p><strong>Supabase URL:</strong> ${supabaseUrl || "Not found"}</p>
+            <p><strong>Supabase Key:</strong> ${
+              supabaseKey ? "Found" : "Not found"
+            }</p>
+        `;
+
+      // Test Supabase connection
+      const supabaseResult = document.getElementById("supabase-result");
+
+      try {
+        // Simple fetch test to Supabase
+        const testUrl = "https://bwwjhxpzwlgcfrsfpfzo.supabase.co/rest/v1/";
+
+        fetch(testUrl, {
+          headers: {
+            apikey: "sb_publishable_5X75v9B81nOcQKuSRBofyQ_2OV7KIL9",
+            Authorization:
+              "Bearer sb_publishable_5X75v9B81nOcQKuSRBofyQ_2OV7KIL9",
+          },
+        })
+          .then((response) => {
+            if (response.ok) {
+              supabaseResult.innerHTML =
+                '<p class="success">✅ Supabase connection successful!</p>';
+            } else {
+              supabaseResult.innerHTML = `<p class="warning">⚠️ Supabase responded with status: ${response.status}</p>`;
+            }
+          })
+          .catch((error) => {
+            supabaseResult.innerHTML = `<p class="error">❌ Supabase connection failed: ${error.message}</p>`;
+          });
+      } catch (error) {
+        supabaseResult.innerHTML = `<p class="error">❌ Test failed: ${error.message}</p>`;
+      }
+    </script>
+  </body>
+</html>

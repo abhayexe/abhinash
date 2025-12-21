@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ChatBot API Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .test-result {
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 5px;
+      }
+      .success {
+        background: #d4edda;
+        color: #155724;
+      }
+      .error {
+        background: #f8d7da;
+        color: #721c24;
+      }
+      .info {
+        background: #d1ecf1;
+        color: #0c5460;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🤖 ChatBot API Test</h1>
+    <button onclick="testGeminiAPI()">Test New Gemini API</button>
+    <div id="results"></div>
+
+    <script>
+      async function testGeminiAPI() {
+        const resultsDiv = document.getElementById("results");
+        resultsDiv.innerHTML =
+          '<div class="info">Testing new Gemini API...</div>';
+
+        const API_KEY = "AIzaSyBn-CHbkORD3gFb8uA1m30VTNVnnLYlrNw";
+        const API_URL =
+          "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent";
+
+        try {
+          const response = await fetch(`${API_URL}?key=${API_KEY}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              contents: [
+                {
+                  role: "user",
+                  parts: [
+                    {
+                      text: "Hello! Can you help me with car maintenance tips?",
+                    },
+                  ],
+                },
+              ],
+              generationConfig: {
+                temperature: 0.2,
+                topK: 40,
+                topP: 0.95,
+                maxOutputTokens: 1024,
+              },
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data = await response.json();
+          const aiResponse =
+            data.candidates?.[0]?.content?.parts?.[0]?.text || "No response";
+
+          resultsDiv.innerHTML = `
+                    <div class="success">✅ API Test Successful!</div>
+                    <div class="info"><strong>AI Response:</strong><br>${aiResponse}</div>
+                `;
+        } catch (error) {
+          resultsDiv.innerHTML = `
+                    <div class="error">❌ API Test Failed: ${error.message}</div>
+                `;
+        }
+      }
+    </script>
+  </body>
+</html>

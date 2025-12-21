@@ -239,7 +239,7 @@ export function MyRentals() {
                       <div className="flex items-center text-gray-600">
                         <DollarSign className="h-4 w-4 mr-2" />
                         <span className="font-semibold">
-                          Total: ${rental.total_price.toFixed(2)}
+                          Total: ₹{rental.total_price.toFixed(2)}
                         </span>
                       </div>
 

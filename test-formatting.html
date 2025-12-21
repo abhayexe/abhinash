@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>ChatBot Formatting Test</title>
+  </head>
+  <body>
+    <h1>🎨 ChatBot Formatting Preview</h1>
+    <div
+      style="
+        max-width: 400px;
+        background: #f5f5f5;
+        padding: 20px;
+        border-radius: 10px;
+      "
+    >
+      <h3>Before (Raw Markdown):</h3>
+      <div
+        style="
+          background: white;
+          padding: 10px;
+          border-radius: 5px;
+          margin-bottom: 10px;
+        "
+      >
+        Hello there! Based on the current listings in our marketplace, we have
+        one fantastic car available for rent right now: * **Porsh 911 (2001)** *
+        **Location:** Agartha * **Daily Rate:** $200 * **Fuel Type:** Gasoline *
+        **Transmission:** Automatic * **Seats:** 5 It's a classic choice for a
+        thrilling drive!
+      </div>
+
+      <h3>After (Formatted):</h3>
+      <div
+        style="background: white; padding: 10px; border-radius: 5px"
+        id="formatted"
+      ></div>
+    </div>
+
+    <script>
+      function formatMessage(text) {
+        return text
+          .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+          .replace(
+            /\* (.*?)(?=\n|$)/g,
+            '<div style="margin-left: 10px; margin-bottom: 4px;">• $1</div>'
+          )
+          .replace(/\*(.*?)\*/g, "<em>$1</em>")
+          .replace(/\n/g, "<br>");
+      }
+
+      const rawText =
+        "Hello there! Based on the current listings in our marketplace, we have one fantastic car available for rent right now:\n\n* **Porsh 911 (2001)**\n* **Location:** Agartha\n* **Daily Rate:** $200\n* **Fuel Type:** Gasoline\n* **Transmission:** Automatic\n* **Seats:** 5\n\nIt's a classic choice for a thrilling drive!";
+
+      document.getElementById("formatted").innerHTML = formatMessage(rawText);
+    </script>
+  </body>
+</html>
