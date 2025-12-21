@@ -145,6 +145,7 @@ export function MyRentals() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-900">My Rental Bookings</h1>
         <button
+          type="button"
           onClick={() => navigate("/rent")}
           className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700"
         >
@@ -180,6 +181,7 @@ export function MyRentals() {
           </p>
           <div className="mt-6">
             <button
+              type="button"
               onClick={() => navigate("/rent")}
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700"
             >
@@ -254,8 +256,16 @@ export function MyRentals() {
                   </div>
 
                   {rental.status === "pending" && rental.car && (
-                    <div className="mt-4 border-t pt-4 flex justify-end">
+                    <div className="mt-4 border-t pt-4 flex justify-between">
                       <button
+                        type="button"
+                        onClick={() => navigate(`/payment?rental=${rental.id}`)}
+                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium"
+                      >
+                        Pay Now - ₹{rental.total_price}
+                      </button>
+                      <button
+                        type="button"
                         onClick={() =>
                           rental.car && navigate(`/rent/${rental.car.id}`)
                         }

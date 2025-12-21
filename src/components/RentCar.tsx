@@ -141,7 +141,7 @@ export function RentCar() {
 
       if (error) throw error;
 
-      navigate("/my-rentals", { state: { success: true } });
+      navigate(`/payment?rental=${data[0].id}`, { state: { success: true } });
     } catch (error: any) {
       console.error("Error creating rental:", error);
       setError(error.message || "Failed to create rental");

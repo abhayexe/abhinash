@@ -9,6 +9,16 @@ export function Auth() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
+  // Profile fields for signup
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [driversLicense, setDriversLicense] = useState("");
+  const [address, setAddress] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+  const [postalCode, setPostalCode] = useState("");
+  const [profilePictureUrl, setProfilePictureUrl] = useState("");
+
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -17,17 +27,46 @@ export function Auth() {
 
     try {
       if (isSignUp) {
+        // Validate required fields for signup
+        if (!fullName.trim()) {
+          setError("Full name is required");
+          return;
+        }
+        if (!phone.match(/^[0-9]{10}$/)) {
+          setError("Phone number must be exactly 10 digits");
+          return;
+        }
+        if (!driversLicense.match(/^[0-9]{7}$/)) {
+          setError("Driver's license must be exactly 7 digits");
+          return;
+        }
+        if (!address.trim() || !city.trim() || !state.trim()) {
+          setError("Address, city, and state are required");
+          return;
+        }
+
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
+          options: {
+            data: {
+              full_name: fullName,
+              phone: phone,
+              drivers_license: driversLicense,
+              address: address,
+              city: city,
+              state: state,
+              postal_code: postalCode,
+              profile_picture_url: profilePictureUrl,
+            },
+          },
         });
 
         if (error) {
           setError(error.message);
-        } else if (data.user && !data.user.email_confirmed_at) {
-          setMessage("Check your email for the confirmation link!");
         } else if (data.user) {
-          setMessage("Account created successfully!");
+          // Always show success message regardless of email confirmation
+          setMessage("Account created successfully! You can now sign in.");
         }
       } else {
         const { error } = await supabase.auth.signInWithPassword({
@@ -68,12 +107,12 @@ export function Auth() {
       )}
 
       <form className="mt-8 space-y-6" onSubmit={handleAuth}>
-        <div className="rounded-md shadow-sm -space-y-px">
+        <div className="space-y-4">
           <div>
             <input
               type="email"
               required
-              className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+              className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
               placeholder="Email address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -84,12 +123,101 @@ export function Auth() {
               type="password"
               required
               minLength={6}
-              className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+              className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
               placeholder="Password (min 6 characters)"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
+
+          {isSignUp && (
+            <>
+              <div>
+                <input
+                  type="text"
+                  required
+                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                  placeholder="Full Name"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                />
+              </div>
+              <div>
+                <input
+                  type="tel"
+                  required
+                  pattern="[0-9]{10}"
+                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                  placeholder="Phone Number (10 digits)"
+                  value={phone}
+                  onChange={(e) =>
+                    setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))
+                  }
+                />
+              </div>
+              <div>
+                <input
+                  type="text"
+                  required
+                  pattern="[0-9]{7}"
+                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                  placeholder="Driver's License Number (7 digits)"
+                  value={driversLicense}
+                  onChange={(e) =>
+                    setDriversLicense(
+                      e.target.value.replace(/\D/g, "").slice(0, 7)
+                    )
+                  }
+                />
+              </div>
+              <div>
+                <input
+                  type="url"
+                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                  placeholder="Profile Picture URL (optional)"
+                  value={profilePictureUrl}
+                  onChange={(e) => setProfilePictureUrl(e.target.value)}
+                />
+              </div>
+              <div>
+                <input
+                  type="text"
+                  required
+                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                  placeholder="Address"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <input
+                  type="text"
+                  required
+                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                  placeholder="City"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                />
+                <input
+                  type="text"
+                  required
+                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                  placeholder="State"
+                  value={state}
+                  onChange={(e) => setState(e.target.value)}
+                />
+              </div>
+              <div>
+                <input
+                  type="text"
+                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                  placeholder="Postal Code (optional)"
+                  value={postalCode}
+                  onChange={(e) => setPostalCode(e.target.value)}
+                />
+              </div>
+            </>
+          )}
         </div>
 
         <div>
@@ -109,6 +237,17 @@ export function Auth() {
             setIsSignUp(!isSignUp);
             setMessage("");
             setError("");
+            // Clear signup fields when switching to signin
+            if (isSignUp) {
+              setFullName("");
+              setPhone("");
+              setDriversLicense("");
+              setAddress("");
+              setCity("");
+              setState("");
+              setPostalCode("");
+              setProfilePictureUrl("");
+            }
           }}
           className="text-indigo-600 hover:text-indigo-500"
         >
