@@ -55,7 +55,7 @@ export function ChatBot() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const API_KEY =
     import.meta.env.VITE_GEMINI_API_KEY ||
-    "AIzaSyBn-CHbkORD3gFb8uA1m30VTNVnnLYlrNw";
+    "AIzaSyDdSr5pR60dQv-7KzWQ3zhvpYTfIvqQHK4";
   const API_URL =
     "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
