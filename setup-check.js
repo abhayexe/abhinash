@@ -9,8 +9,8 @@
 
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = "https://bwwjhxpzwlgcfrsfpfzo.supabase.co";
-const supabaseKey = "sb_publishable_5X75v9B81nOcQKuSRBofyQ_2OV7KIL9";
+const supabaseUrl = "https://tptzndshdlzwezopbbqy.supabase.co";
+const supabaseKey = "sb_publishable_w6ouOzOE-iUHmSFVkzkSLQ_tFSEF9ZB";
 
 async function checkSetup() {
   console.log("🚗 CarShare Platform Setup Check\n");
